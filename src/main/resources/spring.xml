@@ -1,25 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
-	xmlns:c="http://www.springframework.org/schema/c" xmlns:p="http://www.springframework.org/schema/p"
-	xmlns:cache="http://www.springframework.org/schema/cache" xmlns:aop="http://www.springframework.org/schema/aop"
 	xsi:schemaLocation="  
-           http://www.springframework.org/schema/beans  
-           http://www.springframework.org/schema/beans/spring-beans-4.0.xsd  
-           http://www.springframework.org/schema/aop  
-           http://www.springframework.org/schema/aop/spring-aop-4.0.xsd 
-           http://www.springframework.org/schema/context  
-           http://www.springframework.org/schema/context/spring-context-4.0.xsd 
-           http://www.springframework.org/schema/cache 
-           http://www.springframework.org/schema/cache/spring-cache-4.2.xsd">
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd  
+http://www.springframework.org/schema/context  http://www.springframework.org/schema/context/spring-context-4.3.xsd">
 
-	<!-- 自动扫描注解的bean -->
-	<context:component-scan base-package="com.luo" />
-	<context:annotation-config />
-	<cache:annotation-driven />
-	<!-- 加载配置属性文件 按需加载 -->  
-	<context:property-placeholder ignore-unresolvable="true" location="classpath:redis-cluster.properties" />  
 
+	<description>Jedis Cluster Configuration集群</description>
+	<context:component-scan base-package="com.riches" />
+	<!-- 加载配置属性文件 按需加载 -->
+	<context:property-placeholder
+		ignore-unresolvable="true" location="classpath:redis-cluster.properties" />
 	<bean id="redisClusterConfiguration"
 		class="org.springframework.data.redis.connection.RedisClusterConfiguration">
 		<property name="maxRedirects" value="${redis.maxRedirects}"></property>
@@ -32,6 +23,22 @@
 				<bean class="org.springframework.data.redis.connection.RedisClusterNode">
 					<constructor-arg name="host" value="${redis.host2}"></constructor-arg>
 					<constructor-arg name="port" value="${redis.port2}"></constructor-arg>
+				</bean>
+				<bean class="org.springframework.data.redis.connection.RedisClusterNode">
+					<constructor-arg name="host" value="${redis.host3}"></constructor-arg>
+					<constructor-arg name="port" value="${redis.port3}"></constructor-arg>
+				</bean>
+				<bean class="org.springframework.data.redis.connection.RedisClusterNode">
+					<constructor-arg name="host" value="${redis.host4}"></constructor-arg>
+					<constructor-arg name="port" value="${redis.port4}"></constructor-arg>
+				</bean>
+				<bean class="org.springframework.data.redis.connection.RedisClusterNode">
+					<constructor-arg name="host" value="${redis.host5}"></constructor-arg>
+					<constructor-arg name="port" value="${redis.port5}"></constructor-arg>
+				</bean>
+				<bean class="org.springframework.data.redis.connection.RedisClusterNode">
+					<constructor-arg name="host" value="${redis.host6}"></constructor-arg>
+					<constructor-arg name="port" value="${redis.port6}"></constructor-arg>
 				</bean>
 			</set>
 		</property>
@@ -48,25 +55,5 @@
 
 	<bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate">
 		<property name="connectionFactory" ref="jeidsConnectionFactory" />
-		<property name="keySerializer">
-            <bean class="org.springframework.data.redis.serializer.StringRedisSerializer"/>
-        </property>
 	</bean>
-	
-	<!-- 配置RedisCacheManager -->  
-    <bean id="redisCacheManager" class="org.springframework.data.redis.cache.RedisCacheManager">  
-         <constructor-arg name="redisOperations" ref="redisTemplate" />  
-        <property name="defaultExpiration" value="${redis.expiration}"/>  
-    </bean>  
-      
-    <!-- 配置RedisCacheConfig -->  
-    <bean id="redisCacheConfig" class="com.riches.cache.RedisCacheConfig">  
-        <constructor-arg ref="jedisConnectionFactory" />  
-        <constructor-arg ref="redisTemplate" />  
-        <constructor-arg ref="redisCacheManager" />  
-    </bean>
-    
-    <!-- 开启缓存注解 -->
-    <cache:annotation-driven/>
-
-</beans>
+</beans> 
