@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:cache="http://www.springframework.org/schema/cache"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
 	xsi:schemaLocation="  
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd  
-http://www.springframework.org/schema/context  http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+http://www.springframework.org/schema/context  http://www.springframework.org/schema/context/spring-context-4.3.xsd
+http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd">
 
 
 	<description>Jedis Cluster Configuration集群</description>
@@ -56,4 +57,17 @@ http://www.springframework.org/schema/context  http://www.springframework.org/sc
 	<bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate">
 		<property name="connectionFactory" ref="jeidsConnectionFactory" />
 	</bean>
+
+	<!-- 开启spring cache注解功能 
+	<cache:annotation-driven cache-manager="cacheManager" />
+	<bean id="cacheManager" class="org.springframework.cache.support.SimpleCacheManager">
+    <property name="caches">
+      <set>
+        <bean class="com.riches.cache.RedisCache">
+          <property name="redisTemplate" ref="redisTemplate" />
+          <property name="name" value="default"/>
+        </bean>
+      </set>
+    </property>
+  </bean>-->
 </beans> 

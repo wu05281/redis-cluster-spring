@@ -15,7 +15,7 @@ public class TestUserInfoService {
 	@Resource
 	private UserInfoService userInfoService;
 	
-	//@Test
+//	@Test
 	public void testSetUserName(){
 		userInfoService.setUserName("number-1");
 	}
