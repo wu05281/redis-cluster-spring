@@ -8,6 +8,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.riches.cache.client.RedisClient;
+import com.riches.cache.explanation.RedisCache;
 
 @Service
 public class UserInfoServiceImpl implements UserInfoService {
@@ -32,6 +33,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 //	@Cacheable(key="#key", value="default")
+	@RedisCache
 	public String getUserName(final String key) {
 		System.out.println("未能命中");
 		String name = redisClient.get(key, String.class);

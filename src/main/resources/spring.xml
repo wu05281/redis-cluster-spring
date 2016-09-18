@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans" xmlns:cache="http://www.springframework.org/schema/cache"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:cache="http://www.springframework.org/schema/cache" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
 	xsi:schemaLocation="  
-http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans－4.3.xsd  
-http://www.springframework.org/schema/context  http://www.springframework.org/schema/context/spring-context－4.3.xsd
-http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd">
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd  
+http://www.springframework.org/schema/context  http://www.springframework.org/schema/context/spring-context.xsd
+http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
 
 
 	<description>Jedis Cluster Configuration集群</description>
+	<aop:aspectj-autoproxy />
 	<context:component-scan base-package="com.riches" />
 	<!-- 加载配置属性文件 按需加载 -->
 	<context:property-placeholder
@@ -58,16 +61,9 @@ http://www.springframework.org/schema/cache http://www.springframework.org/schem
 		<property name="connectionFactory" ref="jeidsConnectionFactory" />
 	</bean>
 
-	<!-- 开启spring cache注解功能 
-	<cache:annotation-driven cache-manager="cacheManager" />
-	<bean id="cacheManager" class="org.springframework.cache.support.SimpleCacheManager">
-    <property name="caches">
-      <set>
-        <bean class="com.riches.cache.RedisCache">
-          <property name="redisTemplate" ref="redisTemplate" />
-          <property name="name" value="default"/>
-        </bean>
-      </set>
-    </property>
-  </bean>-->
+	<!-- 开启spring cache注解功能 <cache:annotation-driven cache-manager="cacheManager" 
+		/> <bean id="cacheManager" class="org.springframework.cache.support.SimpleCacheManager"> 
+		<property name="caches"> <set> <bean class="com.riches.cache.RedisCache"> 
+		<property name="redisTemplate" ref="redisTemplate" /> <property name="name" 
+		value="default"/> </bean> </set> </property> </bean> -->
 </beans> 
