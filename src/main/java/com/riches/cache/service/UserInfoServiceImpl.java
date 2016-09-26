@@ -17,7 +17,6 @@ public class UserInfoServiceImpl implements UserInfoService {
 	@Resource
 	private RedisClient redisClient;
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void setUserName(final String key) {
 		redisClient.setString(key, System.currentTimeMillis()+"", 300);
 //		redisTemplate.execute(new RedisCallback() {
@@ -28,7 +27,6 @@ public class UserInfoServiceImpl implements UserInfoService {
 //			});
 	}
 	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@RedisCache(expiration=30)
 	public String getUserName(String key) {
 		System.out.println("未能命中");

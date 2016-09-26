@@ -1,11 +1,15 @@
 package com.riches.cache.explanation;
 
+import java.lang.reflect.Method;
+
 import javax.annotation.Resource;
 
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
 
 import com.riches.cache.client.RedisClient;
@@ -31,11 +35,17 @@ public class RedisCacheAdvice {
 		Object[] args = pjp.getArgs();
 		
 		
-		// 得到被代理的方法
-//		Method me = ((MethodSignature) pjp.getSignature()).getMethod();
-		// 得到被代理的方法上的注解
-//		Class modelType = me.getAnnotation(RedisCache.class).annotationType();
-
+		Signature sig = pjp.getSignature();
+        MethodSignature msig = null;
+        if (!(sig instanceof MethodSignature)) {
+            throw new IllegalArgumentException("该注解只能用于方法");
+        }
+        msig = (MethodSignature) sig;
+        Object target = pjp.getTarget();
+        Method currentMethod = target.getClass().getMethod(msig.getName(), msig.getParameterTypes());
+        
+        int expiration = currentMethod.getAnnotation(RedisCache.class).expiration();
+        
 		// 根据类名，方法名和参数生成key
 		String key = genKey(clazzName, methodName, args);
 		System.out.println(key);
@@ -44,7 +54,11 @@ public class RedisCacheAdvice {
 			obj = redisClient.get(key, Object.class);
 		} else {
 			obj = pjp.proceed();
-			redisClient.set(key, obj);
+			if (expiration > 0) {
+				redisClient.set(key, obj, expiration);
+			} else {
+				redisClient.set(key, obj);
+			}
 		}
 		return obj;
 	}
