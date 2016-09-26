@@ -1,23 +1,74 @@
 package com.riches.cache.explanation;
 
+import javax.annotation.Resource;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.stereotype.Component;
 
+import com.riches.cache.client.RedisClient;
+
 @Component
 @Aspect
 public class RedisCacheAdvice {
+	
+	@Resource
+	private RedisClient redisClient;
 
 	@Pointcut("@annotation(com.riches.cache.explanation.RedisCache)")
-	public void getPonitcut(){
-		
+	public void getPonitcut() {
+
 	}
-	
+
 	@Around("getPonitcut()")
-    public Object cacheGetSingle(final ProceedingJoinPoint pjp) throws Throwable {
-		System.out.println("RedisCacheAdvice。cacheGetSingle");
-        return pjp.proceed();
-    }
+	public Object cacheGetSingle(final ProceedingJoinPoint pjp)
+			throws Throwable {
+		// 得到类名、方法名和参数
+		String clazzName = pjp.getTarget().getClass().getName();
+		String methodName = pjp.getSignature().getName();
+		Object[] args = pjp.getArgs();
+		
+		
+		// 得到被代理的方法
+//		Method me = ((MethodSignature) pjp.getSignature()).getMethod();
+		// 得到被代理的方法上的注解
+//		Class modelType = me.getAnnotation(RedisCache.class).annotationType();
+
+		// 根据类名，方法名和参数生成key
+		String key = genKey(clazzName, methodName, args);
+		System.out.println(key);
+		Object obj = null;
+		if (redisClient.exists(key)) {
+			obj = redisClient.get(key, Object.class);
+		} else {
+			obj = pjp.proceed();
+			redisClient.set(key, obj);
+		}
+		return obj;
+	}
+
+	/**
+	 * 根据类名、方法名和参数生成key
+	 * 
+	 * @param clazzName
+	 * @param methodName
+	 * @param args
+	 *            方法参数
+	 * @return
+	 */
+	protected String genKey(String clazzName, String methodName, Object[] args) {
+		StringBuilder sb = new StringBuilder(clazzName);
+		sb.append("-");
+		sb.append(methodName);
+		sb.append("-");
+
+		for (Object obj : args) {
+			sb.append(obj.toString());
+			sb.append("-");
+		}
+
+		return sb.toString();
+	}
 }

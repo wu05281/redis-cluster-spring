@@ -35,7 +35,7 @@ public class RedisClient {
 	 * @param clazz 
 	 * @param seconds 超时时间 0 代表永不过期
 	 */
-	public <T> void set(final String key,final T obj,Class<T> clazz,final int seconds){
+	public <T> void set(final String key,final T obj,final int seconds){
 		Assert.isTrue(!StringUtils.isEmpty(key), "key is not allow empty..");
 		redisTemplate.execute(new RedisCallback<T>() {
 			public T doInRedis(RedisConnection connection)
@@ -76,8 +76,8 @@ public class RedisClient {
 	/**
 	 * 取一个对象测试
 	 */
-	public <T> void set(final String key,final T obj,Class<T> clazz){
-		this.set(key, obj, clazz, 0);
+	public <T> void set(final String key,final T obj){
+		this.set(key, obj, 0);
 	}
 	
 	/**
@@ -87,7 +87,7 @@ public class RedisClient {
 	 * @param seconds 超时时间 0 代表永不过期
 	 */
 	public void setString(final String key,final String value ,final int seconds){
-		this.set(key, value, String.class, seconds);
+		this.set(key, value, seconds);
 	}
 	
 	/**
@@ -96,7 +96,7 @@ public class RedisClient {
 	 * @param value
 	 */
 	public void setString(final String key,final String value){
-		this.set(key, value, String.class);
+		this.set(key, value);
 	}
 	
 	/**
