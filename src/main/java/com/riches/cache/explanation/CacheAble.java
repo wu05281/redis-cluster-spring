@@ -7,7 +7,9 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RedisCache {
+public @interface CacheAble {
+	
+	String key() default "";
 
 	int expiration() default 0;
 }

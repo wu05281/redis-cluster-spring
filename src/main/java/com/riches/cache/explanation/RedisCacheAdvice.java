@@ -8,8 +8,11 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
 
 import com.riches.cache.client.RedisClient;
@@ -21,13 +24,8 @@ public class RedisCacheAdvice {
 	@Resource
 	private RedisClient redisClient;
 
-	@Pointcut("@annotation(com.riches.cache.explanation.RedisCache)")
-	public void getPonitcut() {
-
-	}
-
-	@Around("getPonitcut()")
-	public Object cacheGetSingle(final ProceedingJoinPoint pjp) throws Throwable {
+	@Around("@annotation(com.riches.cache.explanation.CacheAble)")
+	public Object cacheAble(final ProceedingJoinPoint pjp) throws Throwable {
 
 		Signature sig = pjp.getSignature();
 
@@ -38,15 +36,11 @@ public class RedisCacheAdvice {
 		msig = (MethodSignature) sig;
 		Object target = pjp.getTarget();
 		Method currentMethod = target.getClass().getMethod(msig.getName(), msig.getParameterTypes());
+		CacheAble cacheable = currentMethod.getAnnotation(CacheAble.class);
+		int expiration = cacheable.expiration();
 
-		int expiration = currentMethod.getAnnotation(RedisCache.class).expiration();
-
-		// 根据类名，方法名和参数生成key
-		// 得到类名、方法名和参数
-		String clazzName = pjp.getTarget().getClass().getName();
-		String methodName = sig.getName();
-		Object[] args = pjp.getArgs();
-		String key = genKey(clazzName, methodName, args);
+		String key =parseKey(cacheable.key(), currentMethod, pjp.getArgs());
+		System.out.println(key);
 
 		Object obj = null;
 		if (redisClient.exists(key)) {
@@ -61,27 +55,51 @@ public class RedisCacheAdvice {
 		}
 		return obj;
 	}
+	
+	@Around("@annotation(com.riches.cache.explanation.CacheEvict)")
+	public Object cacheEvict(final ProceedingJoinPoint pjp) throws Throwable {
 
-	/**
-	 * 根据类名、方法名和参数生成key
-	 * 
-	 * @param clazzName
-	 * @param methodName
-	 * @param args
-	 *            方法参数
-	 * @return
-	 */
-	protected String genKey(String clazzName, String methodName, Object[] args) {
-		StringBuilder sb = new StringBuilder(clazzName);
-		sb.append("-");
-		sb.append(methodName);
-		sb.append("-");
+		Signature sig = pjp.getSignature();
 
-		for (Object obj : args) {
-			sb.append(obj.toString());
-			sb.append("-");
+		MethodSignature msig = null;
+		if (!(sig instanceof MethodSignature)) {
+			throw new IllegalArgumentException("该注解只能用于方法");
 		}
+		msig = (MethodSignature) sig;
+		Object target = pjp.getTarget();
+		Method currentMethod = target.getClass().getMethod(msig.getName(), msig.getParameterTypes());
+		CacheEvict cacheEvict = currentMethod.getAnnotation(CacheEvict.class);
 
-		return sb.toString();
+		String key =parseKey(cacheEvict.key(), currentMethod, pjp.getArgs());
+		System.out.println(key);
+		if (redisClient.exists(key)) {
+			redisClient.expire(key, 0);
+		}
+		return pjp.proceed();
 	}
+
+	    /**
+	     *	获取缓存的key 
+	     *	key 定义在注解上，支持SPEL表达式
+	     * @param pjp
+	     * @return
+	     */
+	    private String parseKey(String key,Method method,Object [] args){
+	      
+	      
+	      //获取被拦截方法参数名列表(使用Spring支持类库)
+	      LocalVariableTableParameterNameDiscoverer u =   
+	        new LocalVariableTableParameterNameDiscoverer();  
+	      String [] paraNameArr=u.getParameterNames(method);
+	      
+	      //使用SPEL进行key的解析
+	      ExpressionParser parser = new SpelExpressionParser(); 
+	      //SPEL上下文
+	      StandardEvaluationContext context = new StandardEvaluationContext();
+	      //把方法参数放入SPEL上下文中
+	      for(int i=0;i<paraNameArr.length;i++){
+	        context.setVariable(paraNameArr[i], args[i]);
+	      }
+	      return parser.parseExpression(key).getValue(context,String.class);
+	    }
 }

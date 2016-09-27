@@ -5,7 +5,8 @@ import javax.annotation.Resource;
 import org.springframework.stereotype.Service;
 
 import com.riches.cache.client.RedisClient;
-import com.riches.cache.explanation.RedisCache;
+import com.riches.cache.explanation.CacheAble;
+import com.riches.cache.explanation.CacheEvict;
 
 @Service
 public class UserInfoServiceImpl implements UserInfoService {
@@ -27,7 +28,8 @@ public class UserInfoServiceImpl implements UserInfoService {
 //			});
 	}
 	
-	@RedisCache(expiration=30)
+	@CacheAble(expiration=300, key="#key")
+	//@CacheEvict(key="#key")
 	public String getUserName(String key) {
 		System.out.println("未能命中");
 //		String name = redisClient.get(key, String.class);
