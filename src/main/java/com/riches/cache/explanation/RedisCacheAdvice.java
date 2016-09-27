@@ -27,15 +27,7 @@ public class RedisCacheAdvice {
 	@Around("@annotation(com.riches.cache.explanation.CacheAble)")
 	public Object cacheAble(final ProceedingJoinPoint pjp) throws Throwable {
 
-		Signature sig = pjp.getSignature();
-
-		MethodSignature msig = null;
-		if (!(sig instanceof MethodSignature)) {
-			throw new IllegalArgumentException("该注解只能用于方法");
-		}
-		msig = (MethodSignature) sig;
-		Object target = pjp.getTarget();
-		Method currentMethod = target.getClass().getMethod(msig.getName(), msig.getParameterTypes());
+		Method currentMethod = parseMethod(pjp);
 		CacheAble cacheable = currentMethod.getAnnotation(CacheAble.class);
 		int expiration = cacheable.expiration();
 
@@ -59,6 +51,18 @@ public class RedisCacheAdvice {
 	@Around("@annotation(com.riches.cache.explanation.CacheEvict)")
 	public Object cacheEvict(final ProceedingJoinPoint pjp) throws Throwable {
 
+		Method currentMethod = parseMethod(pjp);
+		CacheEvict cacheEvict = currentMethod.getAnnotation(CacheEvict.class);
+
+		String key =parseKey(cacheEvict.key(), currentMethod, pjp.getArgs());
+		System.out.println(key);
+		if (redisClient.exists(key)) {
+			redisClient.expire(key, 0);
+		}
+		return pjp.proceed();
+	}
+
+	private Method parseMethod(final ProceedingJoinPoint pjp) throws NoSuchMethodException {
 		Signature sig = pjp.getSignature();
 
 		MethodSignature msig = null;
@@ -68,14 +72,7 @@ public class RedisCacheAdvice {
 		msig = (MethodSignature) sig;
 		Object target = pjp.getTarget();
 		Method currentMethod = target.getClass().getMethod(msig.getName(), msig.getParameterTypes());
-		CacheEvict cacheEvict = currentMethod.getAnnotation(CacheEvict.class);
-
-		String key =parseKey(cacheEvict.key(), currentMethod, pjp.getArgs());
-		System.out.println(key);
-		if (redisClient.exists(key)) {
-			redisClient.expire(key, 0);
-		}
-		return pjp.proceed();
+		return currentMethod;
 	}
 
 	    /**
